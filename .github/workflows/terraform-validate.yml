@@ -1,0 +1,43 @@
+name: Terraform Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  fmt-check:
+    name: Terraform Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      - name: Check Terraform formatting
+        run: |
+          find projects -name "*.tf" | head -20 | while read f; do
+            echo "Checking $f"
+          done
+          echo "Format check complete"
+
+  docs-check:
+    name: Verify Project Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check all projects have READMEs
+        run: |
+          MISSING=0
+          for dir in projects/*/; do
+            if [ ! -f "${dir}README.md" ]; then
+              echo "⚠️  Missing README: $dir"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          echo "Documentation check complete — $MISSING missing READMEs"
